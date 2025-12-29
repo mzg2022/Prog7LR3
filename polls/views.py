@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db.models import F
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
@@ -11,18 +12,34 @@ class IndexView(generic.ListView):
     context_object_name = 'latest_question_list'  # Имя переменной в шаблоне
     
     def get_queryset(self):
-        """Возвращает последние 5 опубликованных вопросов"""
-        return Question.objects.order_by('-pub_date')[:5]
+        """
+        Возвращает последние 5 опубликованных вопросов (исключая будущие).
+        """
+        return Question.objects.filter(
+            pub_date__lte=timezone.now()  # lte = less than or equal (меньше или равно)
+        ).order_by('-pub_date')[:5]
 
 # Общее представление для деталей вопроса
 class DetailView(generic.DetailView):
     model = Question  # Указываем модель
     template_name = 'polls/detail.html'  # Используем наш шаблон
 
+    def get_queryset(self):
+        """
+        Исключает вопросы, которые еще не опубликованы (будущие даты).
+        """
+        return Question.objects.filter(pub_date__lte=timezone.now())
+
 # Общее представление для результатов
 class ResultsView(generic.DetailView):
     model = Question  # Та же модель
     template_name = 'polls/results.html'  # Другой шаблон
+
+    def get_queryset(self):
+        """
+        Исключает вопросы, которые еще не опубликованы (будущие даты).
+        """
+        return Question.objects.filter(pub_date__lte=timezone.now())
 
 # Функция для обработки голосования
 def vote(request, question_id):

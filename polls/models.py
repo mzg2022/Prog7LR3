@@ -14,11 +14,16 @@ class Question(models.Model):
     def __str__(self):
         return self.question_text
     
-    # Дополнительный метод: был ли вопрос опубликован недавно (за последние сутки)
     def was_published_recently(self):
+        """
+        Проверяет, был ли вопрос опубликован недавно (в течение последних суток).
+        Возвращает True только если pub_date находится между сейчас и 24 часа назад.
+        """
         now = timezone.now()
+        # Вопрос считается недавно опубликованным, если:
+        # 1) Дата публикации не в будущем (pub_date <= now)
+        # 2) Дата публикации не старше 1 дня (now - 1 день <= pub_date)
         return now - datetime.timedelta(days=1) <= self.pub_date <= now
-
 
 # Модель Вариант ответа (Choice) - связана с Question
 class Choice(models.Model):
