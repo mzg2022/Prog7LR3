@@ -1,6 +1,7 @@
 from django.db import models
 import datetime
 from django.utils import timezone
+from django.contrib import admin  # Добавляем импорт
 
 # Модель Вопрос (Question) - хранит вопросы для голосования
 class Question(models.Model):
@@ -14,6 +15,11 @@ class Question(models.Model):
     def __str__(self):
         return self.question_text
     
+    @admin.display(
+        boolean=True,
+        ordering='pub_date',
+        description='Опубликовано недавно?',
+    )
     def was_published_recently(self):
         """
         Проверяет, был ли вопрос опубликован недавно (в течение последних суток).
@@ -29,6 +35,12 @@ class Question(models.Model):
     def total_votes(self):
         """Возвращает общее количество голосов для этого вопроса."""
         return sum(choice.votes for choice in self.choice_set.all())
+    
+    # Метаданные модели
+    class Meta:
+        verbose_name = 'Вопрос'
+        verbose_name_plural = 'Вопросы'
+        ordering = ['-pub_date']  # Сортировка по умолчанию
 
 # Модель Вариант ответа (Choice) - связана с Question
 class Choice(models.Model):
@@ -44,3 +56,8 @@ class Choice(models.Model):
     
     def __str__(self):
         return self.choice_text
+    
+    # Метаданные модели
+    class Meta:
+        verbose_name = 'Вариант ответа'
+        verbose_name_plural = 'Варианты ответов'
