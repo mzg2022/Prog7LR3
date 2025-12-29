@@ -1,36 +1,56 @@
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, Http404
-from .models import Question
+from django.db.models import F
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+from django.views import generic
+from .models import Choice, Question
 
-def index(request):
-    """
-    Главная страница приложения polls.
-    Показывает 5 последних вопросов, отсортированных по дате публикации (новые сначала).
-    """
-    latest_question_list = Question.objects.order_by('-pub_date')[:5]
-    # Передаем список вопросов в шаблон
-    context = {'latest_question_list': latest_question_list}
-    return render(request, 'polls/index.html', context)
+# Общее представление для главной страницы (список вопросов)
+class IndexView(generic.ListView):
+    template_name = 'polls/index.html'  # Используем наш шаблон
+    context_object_name = 'latest_question_list'  # Имя переменной в шаблоне
+    
+    def get_queryset(self):
+        """Возвращает последние 5 опубликованных вопросов"""
+        return Question.objects.order_by('-pub_date')[:5]
 
-def detail(request, question_id):
-    """
-    Страница с деталями конкретного вопроса.
-    Показывает текст вопроса и все варианты ответов.
-    Если вопрос не существует - возвращает ошибку 404.
-    """
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, 'polls/detail.html', {'question': question})
+# Общее представление для деталей вопроса
+class DetailView(generic.DetailView):
+    model = Question  # Указываем модель
+    template_name = 'polls/detail.html'  # Используем наш шаблон
 
-def results(request, question_id):
-    """
-    Страница с результатами голосования для конкретного вопроса.
-    Показывает количество голосов за каждый вариант.
-    """
-    return HttpResponse(f"Вы смотрите результаты вопроса {question_id}.")
+# Общее представление для результатов
+class ResultsView(generic.DetailView):
+    model = Question  # Та же модель
+    template_name = 'polls/results.html'  # Другой шаблон
 
+# Функция для обработки голосования
 def vote(request, question_id):
     """
     Обрабатывает голосование за конкретный вариант ответа.
-    Принимает POST-запрос с выбранным вариантом.
+    Увеличивает счетчик голосов и перенаправляет на страницу результатов.
     """
-    return HttpResponse(f"Вы голосуете за вопрос {question_id}.")
+    # Получаем вопрос или 404
+    question = get_object_or_404(Question, pk=question_id)
+    
+    try:
+        # Получаем выбранный вариант из POST-данных
+        selected_choice = question.choice_set.get(pk=request.POST['choice'])
+    except (KeyError, Choice.DoesNotExist):
+        # Если вариант не выбран или не существует, показываем форму с ошибкой
+        return render(request, 'polls/detail.html', {
+            'question': question,
+            'error_message': "Вы не выбрали вариант ответа.",
+        })
+    else:
+        # Используем F() для атомарного увеличения счетчика в базе данных
+        selected_choice.votes = F('votes') + 1
+        selected_choice.save()
+        # Обновляем объект из базы, чтобы получить актуальное значение
+        selected_choice.refresh_from_db()
+        
+        # Всегда возвращаем HttpResponseRedirect после успешной обработки POST
+        # Это предотвращает повторную отправку формы при нажатии кнопки "Назад"
+        return HttpResponseRedirect(
+            reverse('polls:results', args=(question.id,))
+        )

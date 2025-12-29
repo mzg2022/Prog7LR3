@@ -1,23 +1,18 @@
 from django.urls import path
-from . import views  # импортируем наши views из текущей папки
+from . import views
 
-# Пространство имен приложения - важно для избежания конфликтов URL
 app_name = 'polls'
 
-# urlpatterns - список маршрутов (URL-адресов)
 urlpatterns = [
-    # path("", ...) - главная страница приложения polls
-    path("", views.index, name="index"),
-    # "" - означает "polls/" (будет подключено к основному проекту)
-    # views.index - функция, которая обработает запрос
-    # name="index" - имя маршрута для удобства
-
+    # Главная страница: /polls/
+    path('', views.IndexView.as_view(), name='index'),
+    
     # Детали вопроса: /polls/5/
-    path('<int:question_id>/', views.detail, name='detail'),
+    path('<int:pk>/', views.DetailView.as_view(), name='detail'),
     
     # Результаты: /polls/5/results/
-    path('<int:question_id>/results/', views.results, name='results'),
+    path('<int:pk>/results/', views.ResultsView.as_view(), name='results'),
     
-    # Голосование: /polls/5/vote/
+    # Голосование: /polls/5/vote/ (остается функцией, не классом)
     path('<int:question_id>/vote/', views.vote, name='vote'),
 ]

@@ -2,38 +2,59 @@
 <html>
 <head>
     <title>Вопрос {{ question.id }}</title>
+    <style>
+        .error { color: red; }
+        fieldset { 
+            border: 2px solid #ccc; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+        }
+        legend { 
+            font-weight: bold; 
+            font-size: 1.2em; 
+        }
+        input[type="radio"] { margin-right: 10px; }
+        label { margin-right: 20px; }
+    </style>
 </head>
 <body>
     <h1>{{ question.question_text }}</h1>
     
-    <!-- Показываем ошибки, если они есть (для будущих частей) -->
+    <!-- Показываем сообщение об ошибке, если оно есть -->
     {% if error_message %}
-        <p><strong>{{ error_message }}</strong></p>
+        <p class="error">
+            <strong>{{ error_message }}</strong>
+        </p>
     {% endif %}
     
-    <!-- Форма для голосования (будет работать в Части 4) -->
+    <!-- Форма для голосования -->
     <form action="{% url 'polls:vote' question.id %}" method="post">
         {% csrf_token %}  <!-- Защита от CSRF-атак -->
         
         <fieldset>
-            <legend><h2>Варианты ответа:</h2></legend>
+            <legend><h2>Выберите вариант ответа:</h2></legend>
             
             {% for choice in question.choice_set.all %}
-                <input type="radio" 
-                       name="choice" 
-                       id="choice{{ forloop.counter }}" 
-                       value="{{ choice.id }}">
-                <label for="choice{{ forloop.counter }}">
-                    {{ choice.choice_text }}
-                </label><br>
+                <div>
+                    <input type="radio" 
+                           name="choice" 
+                           id="choice{{ forloop.counter }}" 
+                           value="{{ choice.id }}">
+                    <label for="choice{{ forloop.counter }}">
+                        {{ choice.choice_text }}
+                    </label>
+                </div>
             {% endfor %}
         </fieldset>
         
         <br>
-        <input type="submit" value="Голосовать">
+        <input type="submit" value="Проголосовать">
     </form>
     
     <hr>
-    <a href="{% url 'polls:index' %}">Вернуться к списку опросов</a>
+    
+    <p>
+        <a href="{% url 'polls:index' %}">← Вернуться к списку опросов</a>
+    </p>
 </body>
 </html>

@@ -1,7 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Опросы - Главная</title>
+    <title>Опросы</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        h1 { 
+            color: #333; 
+            border-bottom: 2px solid #4CAF50; 
+            padding-bottom: 10px; 
+        }
+        ul { 
+            list-style-type: none; 
+            padding: 0; 
+        }
+        li { 
+            background: #f9f9f9; 
+            margin: 10px 0; 
+            padding: 15px; 
+            border-left: 4px solid #4CAF50; 
+        }
+        a { 
+            color: #4CAF50; 
+            text-decoration: none; 
+            font-weight: bold; 
+        }
+        a:hover { 
+            text-decoration: underline; 
+        }
+        .empty { 
+            color: #888; 
+            font-style: italic; 
+        }
+    </style>
 </head>
 <body>
     <h1>Последние опросы</h1>
@@ -9,16 +44,23 @@
     {% if latest_question_list %}
         <ul>
         {% for question in latest_question_list %}
-            <!-- Используем тег url с пространством имен polls:detail -->
             <li>
                 <a href="{% url 'polls:detail' question.id %}">
                     {{ question.question_text }}
                 </a>
+                <br>
+                <small>Опубликовано: {{ question.pub_date|date:"d.m.Y H:i" }}</small>
             </li>
         {% endfor %}
         </ul>
     {% else %}
-        <p>Нет доступных опросов.</p>
+        <p class="empty">Нет доступных опросов. Создайте первый опрос в админке!</p>
     {% endif %}
+    
+    <hr>
+    
+    <p>
+        <a href="/admin/" target="_blank">Управление опросами (админка)</a>
+    </p>
 </body>
 </html>
