@@ -1,60 +1,51 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вопрос {{ question.id }}</title>
-    <style>
-        .error { color: red; }
-        fieldset { 
-            border: 2px solid #ccc; 
-            padding: 20px; 
-            margin-bottom: 20px; 
-        }
-        legend { 
-            font-weight: bold; 
-            font-size: 1.2em; 
-        }
-        input[type="radio"] { margin-right: 10px; }
-        label { margin-right: 20px; }
-    </style>
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
 </head>
 <body>
-    <h1>{{ question.question_text }}</h1>
-    
-    <!-- Показываем сообщение об ошибке, если оно есть -->
-    {% if error_message %}
-        <p class="error">
-            <strong>{{ error_message }}</strong>
-        </p>
-    {% endif %}
-    
-    <!-- Форма для голосования -->
-    <form action="{% url 'polls:vote' question.id %}" method="post">
-        {% csrf_token %}  <!-- Защита от CSRF-атак -->
+    <div class="container">
+        <h1>{{ question.question_text }}</h1>
         
-        <fieldset>
-            <legend><h2>Выберите вариант ответа:</h2></legend>
+        {% if error_message %}
+            <p class="error">
+                <strong>{{ error_message }}</strong>
+            </p>
+        {% endif %}
+        
+        <form action="{% url 'polls:vote' question.id %}" method="post">
+            {% csrf_token %}
             
-            {% for choice in question.choice_set.all %}
-                <div>
-                    <input type="radio" 
-                           name="choice" 
-                           id="choice{{ forloop.counter }}" 
-                           value="{{ choice.id }}">
-                    <label for="choice{{ forloop.counter }}">
-                        {{ choice.choice_text }}
-                    </label>
-                </div>
-            {% endfor %}
-        </fieldset>
+            <fieldset>
+                <legend><h2>Выберите вариант ответа:</h2></legend>
+                
+                {% for choice in question.choice_set.all %}
+                    <div>
+                        <input type="radio" 
+                               name="choice" 
+                               id="choice{{ forloop.counter }}" 
+                               value="{{ choice.id }}">
+                        <label for="choice{{ forloop.counter }}">
+                            {{ choice.choice_text }}
+                        </label>
+                    </div>
+                {% empty %}
+                    <p>Для этого вопроса пока нет вариантов ответа.</p>
+                {% endfor %}
+            </fieldset>
+            
+            <br>
+            <input type="submit" value="Проголосовать">
+        </form>
         
-        <br>
-        <input type="submit" value="Проголосовать">
-    </form>
-    
-    <hr>
-    
-    <p>
-        <a href="{% url 'polls:index' %}">← Вернуться к списку опросов</a>
-    </p>
+        <div class="nav-links">
+            <a href="{% url 'polls:index' %}">← Вернуться к списку опросов</a>
+            <a href="{% url 'polls:results' question.id %}">Посмотреть текущие результаты</a>
+        </div>
+    </div>
 </body>
 </html>

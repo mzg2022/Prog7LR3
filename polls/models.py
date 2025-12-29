@@ -24,6 +24,11 @@ class Question(models.Model):
         # 1) Дата публикации не в будущем (pub_date <= now)
         # 2) Дата публикации не старше 1 дня (now - 1 день <= pub_date)
         return now - datetime.timedelta(days=1) <= self.pub_date <= now
+    
+    @property
+    def total_votes(self):
+        """Возвращает общее количество голосов для этого вопроса."""
+        return sum(choice.votes for choice in self.choice_set.all())
 
 # Модель Вариант ответа (Choice) - связана с Question
 class Choice(models.Model):

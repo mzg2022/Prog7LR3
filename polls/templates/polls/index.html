@@ -1,66 +1,39 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Опросы</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 800px; 
-            margin: 0 auto; 
-            padding: 20px; 
-        }
-        h1 { 
-            color: #333; 
-            border-bottom: 2px solid #4CAF50; 
-            padding-bottom: 10px; 
-        }
-        ul { 
-            list-style-type: none; 
-            padding: 0; 
-        }
-        li { 
-            background: #f9f9f9; 
-            margin: 10px 0; 
-            padding: 15px; 
-            border-left: 4px solid #4CAF50; 
-        }
-        a { 
-            color: #4CAF50; 
-            text-decoration: none; 
-            font-weight: bold; 
-        }
-        a:hover { 
-            text-decoration: underline; 
-        }
-        .empty { 
-            color: #888; 
-            font-style: italic; 
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
 </head>
 <body>
-    <h1>Последние опросы</h1>
-    
-    {% if latest_question_list %}
-        <ul>
-        {% for question in latest_question_list %}
-            <li>
-                <a href="{% url 'polls:detail' question.id %}">
-                    {{ question.question_text }}
-                </a>
-                <br>
-                <small>Опубликовано: {{ question.pub_date|date:"d.m.Y H:i" }}</small>
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p class="empty">Нет доступных опросов. Создайте первый опрос в админке!</p>
-    {% endif %}
-    
-    <hr>
-    
-    <p>
-        <a href="/admin/" target="_blank">Управление опросами (админка)</a>
-    </p>
+    <div class="container">
+        <h1>Последние опросы</h1>
+        
+        {% if latest_question_list %}
+            <ul>
+            {% for question in latest_question_list %}
+                <li>
+                    <a href="{% url 'polls:detail' question.id %}">
+                        {{ question.question_text }}
+                    </a>
+                    <br>
+                    <small>Опубликовано: {{ question.pub_date|date:"d.m.Y H:i" }}</small>
+                    {% if question.was_published_recently %}
+                        <span style="color: green; font-size: 0.8em;"> (Новый!)</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty">Нет доступных опросов. Создайте первый опрос в админке!</p>
+        {% endif %}
+        
+        <div class="nav-links">
+            <a href="/admin/" target="_blank">Управление опросами (админка)</a>
+            <a href="{% url 'polls:index' %}">Обновить список</a>
+        </div>
+    </div>
 </body>
 </html>
